@@ -79,6 +79,18 @@ def close(session_attributes, fulfillment_state, message):
 
     return response
 
+### Validation function
+
+def validation(age, investment_amount):
+
+    if age is not None and (int(age)<0 or int(age)>65):
+        return build_validation_result(False, "age", "You should be between the ages of 0 and 65 to use this service, if you are in this range, correctly enter your age.")
+
+    if investment_amount is not None and (int(investment_amount)<5000):
+        return build_validation_result(False, "investment_amount", "The minimum investment is $5000, upgrade your investment amount.")
+    
+    return build_validation_result(True, None, None)
+
 
 ### Intents Handlers ###
 def recommend_portfolio(intent_request):
@@ -98,6 +110,17 @@ def recommend_portfolio(intent_request):
         # for the first violation detected.
 
         ### YOUR DATA VALIDATION CODE STARTS HERE ###
+        
+        validation_result = validation(age, investment_amount)
+        
+        if validation_result['isValid'] == False:
+            return elicit_slot(
+                intent_request["sessionAttributes"],
+                intent_request["currentIntent"]["name"],
+                get_slots(intent_request),
+                validation_result["violatedSlot"],
+                validation_result["message"],
+            )
 
         ### YOUR DATA VALIDATION CODE ENDS HERE ###
 
@@ -110,6 +133,17 @@ def recommend_portfolio(intent_request):
 
     ### YOUR FINAL INVESTMENT RECOMMENDATION CODE STARTS HERE ###
 
+    if risk_level == "None":
+        initial_recommendation = "100% bonds (AGG), 0% equities (SPY)"
+    elif risk_level == "Very Low":
+        initial_recommendation = "80% bonds (AGG), 20% equities (SPY)"
+    elif risk_level == "Low":
+        initial_recommendation = "60% bonds (AGG), 40% equities (SPY)"
+    elif risk_level == "Medium":
+        initial_recommendation = "40% bonds (AGG), 60% equities (SPY)"
+    elif risk_level == "High":
+        initial_recommendation = "20% bonds (AGG), 80% equities (SPY)"
+        
     ### YOUR FINAL INVESTMENT RECOMMENDATION CODE ENDS HERE ###
 
     # Return a message with the initial recommendation based on the risk level.
